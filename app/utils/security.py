@@ -4,40 +4,44 @@ Utilitarios de seguranca (JWT, hash de senha, etc)
 from datetime import datetime, timedelta
 from typing import Optional
 from jose import JWTError, jwt
-from passlib.context import CryptContext
+import bcrypt
 from app.config import settings
-
-# Contexto para hash de senhas com bcrypt
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
 def hash_password(password: str) -> str:
     """
-    Gera hash bcrypt da senha
+    Gera hash bcrypt da senha usando bcrypt diretamente
     Bcrypt tem limite de 72 bytes - trunca se necessario
     """
     # Truncar para 72 bytes se necessario
-    if len(password.encode('utf-8')) > 72:
-        password = password.encode('utf-8')[:72].decode('utf-8', errors='ignore')
-    return pwd_context.hash(password)
+    password_bytes = password.encode('utf-8')
+    if len(password_bytes) > 72:
+        password_bytes = password_bytes[:72]
+
+    # Gerar salt e hash
+    salt = bcrypt.gensalt()
+    hashed = bcrypt.hashpw(password_bytes, salt)
+    return hashed.decode('utf-8')
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     """
-    Verifica se a senha corresponde ao hash
+    Verifica se a senha corresponde ao hash usando bcrypt diretamente
     Bcrypt tem limite de 72 bytes - trunca se necessario
+    Compativel com hashes PHP ($2y$) e Python ($2b$, $2a$)
     """
-    # Truncar para 72 bytes se necessario
-    if len(plain_password.encode('utf-8')) > 72:
-        plain_password = plain_password.encode('utf-8')[:72].decode('utf-8', errors='ignore')
-
     try:
-        return pwd_context.verify(plain_password, hashed_password)
-    except ValueError as e:
+        # Truncar para 72 bytes se necessario
+        password_bytes = plain_password.encode('utf-8')
+        if len(password_bytes) > 72:
+            password_bytes = password_bytes[:72]
+
+        # bcrypt automaticamente suporta $2y$, $2a$, $2b$
+        hashed_bytes = hashed_password.encode('utf-8')
+        return bcrypt.checkpw(password_bytes, hashed_bytes)
+    except (ValueError, Exception):
         # Se o hash no banco esta corrompido, retornar False
-        if "password cannot be longer than 72 bytes" in str(e):
-            return False
-        raise
+        return False
 
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
