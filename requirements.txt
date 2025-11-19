@@ -1,0 +1,36 @@
+# FastAPI e servidor
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+
+# Banco de dados
+sqlalchemy==2.0.23
+alembic==1.12.1
+psycopg2-binary==2.9.9
+
+# Validação e configuração
+pydantic==2.5.0
+pydantic-settings==2.1.0
+python-dotenv==1.0.0
+email-validator==2.1.0
+
+# Autenticação e segurança
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4
+
+# Upload e arquivos
+python-multipart==0.0.6
+aiofiles==23.2.1
+pillow==10.1.0
+
+# Relatórios
+reportlab==4.0.7
+openpyxl==3.1.2
+
+# Testes
+pytest==7.4.3
+pytest-asyncio==0.21.1
+pytest-cov==4.1.0
+httpx==0.25.2
+
+# Produção
+gunicorn==21.2.0
