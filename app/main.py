@@ -66,10 +66,44 @@ def root():
 
 @app.get("/health")
 def health_check():
-    """Health check"""
+    """Health check basico"""
     return {
         "success": True,
         "status": "healthy"
+    }
+
+
+@app.get("/health/detailed")
+def health_check_detailed():
+    """Health check detalhado com diagnostico"""
+    from app.database import SessionLocal
+    from sqlalchemy import text
+
+    health = {
+        "api": "ok",
+        "database": "unknown",
+        "fases_os": "unknown",
+        "cors_origins": settings.CORS_ORIGINS
+    }
+
+    # Testar conexao com banco
+    try:
+        db = SessionLocal()
+        db.execute(text("SELECT 1"))
+        health["database"] = "ok"
+
+        # Testar se fases_os existem
+        from app.models.auxiliares import FaseOS
+        fases_count = db.query(FaseOS).count()
+        health["fases_os"] = f"{fases_count} fases cadastradas"
+
+        db.close()
+    except Exception as e:
+        health["database"] = f"error: {str(e)}"
+
+    return {
+        "success": True,
+        "health": health
     }
 
 
