@@ -130,6 +130,71 @@ def cors_test_options():
     return {}
 
 
+@app.post("/reset-admin-password")
+def reset_admin_password(secret: str = None):
+    """
+    Endpoint para resetar senha do usuario admin (sem autenticacao)
+    Util quando a senha esta corrompida ou em hash incompativel (PHP vs Python)
+    Requer SECRET_KEY como parametro de seguranca
+
+    Exemplo: POST /reset-admin-password?secret=sua-secret-key
+    """
+    from app.database import SessionLocal
+    from app.models.usuario import Usuario
+    from app.utils.security import hash_password
+
+    # Validar secret key
+    if secret != settings.SECRET_KEY:
+        return JSONResponse(
+            status_code=403,
+            content={
+                "success": False,
+                "error": "Secret key invalida. Use ?secret=SUA_SECRET_KEY"
+            }
+        )
+
+    try:
+        db = SessionLocal()
+        admin = db.query(Usuario).filter(Usuario.login == "admin").first()
+
+        if not admin:
+            db.close()
+            return JSONResponse(
+                status_code=404,
+                content={
+                    "success": False,
+                    "error": "Usuario admin nao encontrado no banco"
+                }
+            )
+
+        # Resetar senha
+        hash_antigo = admin.senha
+        nova_senha_hash = hash_password("admin123")
+        admin.senha = nova_senha_hash
+        db.commit()
+        db.close()
+
+        return {
+            "success": True,
+            "message": "Senha do admin resetada com sucesso!",
+            "login": "admin",
+            "senha": "admin123",
+            "hash_antigo": hash_antigo[:30] + "...",
+            "hash_novo": nova_senha_hash[:30] + "...",
+            "warning": "IMPORTANTE: Altere esta senha apos o primeiro login!"
+        }
+
+    except Exception as e:
+        logger.error(f"Erro ao resetar senha: {e}", exc_info=True)
+        return JSONResponse(
+            status_code=500,
+            content={
+                "success": False,
+                "error": str(e)
+            }
+        )
+
+
 @app.post("/init-db")
 def init_database_endpoint(secret: str = None):
     """
