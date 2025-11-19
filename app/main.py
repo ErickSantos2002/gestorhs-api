@@ -4,6 +4,7 @@ Aplicacao FastAPI principal
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse
 import logging
+from datetime import datetime
 
 from app.config import settings
 from app.middleware.cors import setup_cors
@@ -83,7 +84,9 @@ def health_check_detailed():
         "api": "ok",
         "database": "unknown",
         "fases_os": "unknown",
-        "cors_origins": settings.CORS_ORIGINS
+        "cors_origins_raw": settings.CORS_ORIGINS,
+        "cors_origins_list": settings.cors_origins_list,
+        "debug": settings.DEBUG
     }
 
     # Testar conexao com banco
@@ -105,6 +108,26 @@ def health_check_detailed():
         "success": True,
         "health": health
     }
+
+
+@app.get("/cors-test")
+def cors_test():
+    """
+    Endpoint simples para testar CORS
+    Chame este endpoint do frontend para verificar se CORS funciona
+    """
+    return {
+        "success": True,
+        "message": "CORS funcionando!",
+        "timestamp": datetime.utcnow().isoformat(),
+        "cors_origins": settings.cors_origins_list
+    }
+
+
+@app.options("/cors-test")
+def cors_test_options():
+    """OPTIONS para teste de CORS"""
+    return {}
 
 
 @app.on_event("startup")
