@@ -130,6 +130,110 @@ def cors_test_options():
     return {}
 
 
+@app.post("/init-db")
+def init_database_endpoint(secret: str = None):
+    """
+    Endpoint para inicializar banco de dados (apenas para setup inicial)
+    Requer SECRET_KEY como parametro de seguranca
+
+    Exemplo: POST /init-db?secret=sua-secret-key
+    """
+    from app.database import SessionLocal, Base, engine
+    from app.models.usuario import Usuario
+    from app.models.auxiliares import FaseOS
+    from app.utils.security import hash_password, verify_password
+
+    # Validar secret key
+    if secret != settings.SECRET_KEY:
+        return JSONResponse(
+            status_code=403,
+            content={
+                "success": False,
+                "error": "Secret key invalida. Use ?secret=SUA_SECRET_KEY"
+            }
+        )
+
+    results = {
+        "tabelas": "unknown",
+        "fases": "unknown",
+        "admin": "unknown"
+    }
+
+    try:
+        # Criar tabelas
+        Base.metadata.create_all(bind=engine)
+        results["tabelas"] = "criadas"
+
+        db = SessionLocal()
+
+        # Criar fases OS
+        fases = [
+            {"nome": "Solicitado", "descricao": "OS criada, aguardando envio", "ordem": 1, "cor": "#FFA500"},
+            {"nome": "Enviado", "descricao": "Equipamento enviado para calibracao", "ordem": 2, "cor": "#4169E1"},
+            {"nome": "Recebido", "descricao": "Equipamento recebido no laboratorio", "ordem": 3, "cor": "#9370DB"},
+            {"nome": "Em Calibracao", "descricao": "Calibracao em andamento", "ordem": 4, "cor": "#FF8C00"},
+            {"nome": "Calibrado", "descricao": "Calibracao concluida", "ordem": 5, "cor": "#32CD32"},
+            {"nome": "Retornando", "descricao": "Equipamento retornando ao cliente", "ordem": 6, "cor": "#1E90FF"},
+            {"nome": "Entregue", "descricao": "Equipamento entregue ao cliente", "ordem": 7, "cor": "#228B22"},
+            {"nome": "Cancelado", "descricao": "Ordem de servico cancelada", "ordem": 8, "cor": "#DC143C"},
+        ]
+
+        fases_criadas = 0
+        for fase_data in fases:
+            fase = db.query(FaseOS).filter(FaseOS.nome == fase_data["nome"]).first()
+            if not fase:
+                fase = FaseOS(**fase_data)
+                db.add(fase)
+                fases_criadas += 1
+
+        db.commit()
+        results["fases"] = f"{fases_criadas} fases criadas (total: {len(fases)})"
+
+        # Criar/resetar usuario admin
+        admin = db.query(Usuario).filter(Usuario.login == "admin").first()
+
+        if not admin:
+            admin = Usuario(
+                nome="Administrador",
+                email="admin@sistema.com",
+                login="admin",
+                senha=hash_password("admin123"),
+                perfil="admin",
+                ativo="S"
+            )
+            db.add(admin)
+            db.commit()
+            results["admin"] = "criado (login: admin, senha: admin123)"
+        else:
+            # Verificar e resetar senha se necessario
+            if not verify_password("admin123", admin.senha):
+                admin.senha = hash_password("admin123")
+                db.commit()
+                results["admin"] = "senha resetada para admin123"
+            else:
+                results["admin"] = "ja existe (login: admin, senha: admin123)"
+
+        db.close()
+
+        return {
+            "success": True,
+            "message": "Banco de dados inicializado com sucesso!",
+            "results": results,
+            "warning": "IMPORTANTE: Altere a senha do admin em producao!"
+        }
+
+    except Exception as e:
+        logger.error(f"Erro ao inicializar banco: {e}", exc_info=True)
+        return JSONResponse(
+            status_code=500,
+            content={
+                "success": False,
+                "error": str(e),
+                "results": results
+            }
+        )
+
+
 @app.on_event("startup")
 async def startup_event():
     """Evento de inicializacao"""
