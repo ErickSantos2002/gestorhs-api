@@ -28,7 +28,7 @@ class UsuarioBase(BaseModel):
 
 
 class UsuarioCreate(UsuarioBase):
-    senha: str = Field(..., min_length=6, max_length=100)
+    senha: str = Field(..., min_length=6, max_length=72)  # Bcrypt limite
     permissoes: Optional[dict] = None
     alertas: Optional[dict] = None
 
@@ -48,8 +48,8 @@ class UsuarioUpdate(BaseModel):
 
 
 class UsuarioUpdateSenha(BaseModel):
-    senha_atual: str = Field(..., min_length=6)
-    senha_nova: str = Field(..., min_length=6)
+    senha_atual: str = Field(..., min_length=6, max_length=72)
+    senha_nova: str = Field(..., min_length=6, max_length=72)
 
 
 class UsuarioResponse(UsuarioBase):

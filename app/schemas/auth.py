@@ -6,8 +6,8 @@ from typing import Optional
 
 
 class LoginRequest(BaseModel):
-    login: str = Field(..., min_length=3)
-    senha: str = Field(..., min_length=6)
+    login: str = Field(..., min_length=3, max_length=50)
+    senha: str = Field(..., min_length=1, max_length=72)  # Bcrypt limite
 
 
 class TokenResponse(BaseModel):
@@ -27,7 +27,7 @@ class ForgotPasswordRequest(BaseModel):
 
 class ResetPasswordRequest(BaseModel):
     token: str
-    senha_nova: str = Field(..., min_length=6)
+    senha_nova: str = Field(..., min_length=6, max_length=72)
 
 
 class TokenData(BaseModel):

@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 from app.database import SessionLocal, engine, Base
 from app.models.usuario import Usuario
 from app.models.auxiliares import FaseOS
-from app.utils.security import hash_password
+from app.utils.security import hash_password, verify_password
 
 
 def init_fases_os(db: Session):
@@ -32,7 +32,7 @@ def init_fases_os(db: Session):
 
 
 def init_admin_user(db: Session):
-    """Cria usuário administrador padrão"""
+    """Cria usuario administrador padrao"""
     admin = db.query(Usuario).filter(Usuario.login == "admin").first()
 
     if not admin:
@@ -46,12 +46,18 @@ def init_admin_user(db: Session):
         )
         db.add(admin)
         db.commit()
-        print("✅ Usuário admin criado")
+        print("✅ Usuario admin criado")
         print("   Login: admin")
         print("   Senha: admin123")
-        print("   ⚠️  IMPORTANTE: Altere a senha em produção!")
+        print("   ⚠️  IMPORTANTE: Altere a senha em producao!")
     else:
-        print("ℹ️  Usuário admin já existe")
+        print("ℹ️  Usuario admin ja existe")
+        # Verificar se a senha esta valida
+        if not verify_password("admin123", admin.senha):
+            print("⚠️  Senha do admin esta invalida/corrompida. Resetando...")
+            admin.senha = hash_password("admin123")
+            db.commit()
+            print("✅ Senha do admin resetada para: admin123")
 
 
 def init_database():

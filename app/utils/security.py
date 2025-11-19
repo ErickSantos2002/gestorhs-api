@@ -12,13 +12,32 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
 def hash_password(password: str) -> str:
-    """Gera hash bcrypt da senha"""
+    """
+    Gera hash bcrypt da senha
+    Bcrypt tem limite de 72 bytes - trunca se necessario
+    """
+    # Truncar para 72 bytes se necessario
+    if len(password.encode('utf-8')) > 72:
+        password = password.encode('utf-8')[:72].decode('utf-8', errors='ignore')
     return pwd_context.hash(password)
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
-    """Verifica se a senha corresponde ao hash"""
-    return pwd_context.verify(plain_password, hashed_password)
+    """
+    Verifica se a senha corresponde ao hash
+    Bcrypt tem limite de 72 bytes - trunca se necessario
+    """
+    # Truncar para 72 bytes se necessario
+    if len(plain_password.encode('utf-8')) > 72:
+        plain_password = plain_password.encode('utf-8')[:72].decode('utf-8', errors='ignore')
+
+    try:
+        return pwd_context.verify(plain_password, hashed_password)
+    except ValueError as e:
+        # Se o hash no banco esta corrompido, retornar False
+        if "password cannot be longer than 72 bytes" in str(e):
+            return False
+        raise
 
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
