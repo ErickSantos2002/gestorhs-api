@@ -1,5 +1,5 @@
 """
-Importação de todos os models
+Importacao de todos os models
 """
 from app.models.usuario import Usuario
 from app.models.empresa import Empresa, EmpresaHistorico

@@ -1,5 +1,5 @@
 """
-Aplicação FastAPI principal
+Aplicacao FastAPI principal
 """
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse
@@ -29,7 +29,7 @@ logging.basicConfig(
 
 logger = logging.getLogger(__name__)
 
-# Criar aplicação FastAPI
+# Criar aplicacao FastAPI
 app = FastAPI(
     title=settings.PROJECT_NAME,
     version=settings.VERSION,
@@ -75,15 +75,15 @@ def health_check():
 
 @app.on_event("startup")
 async def startup_event():
-    """Evento de inicialização"""
+    """Evento de inicializacao"""
     logger.info(f"🚀 {settings.PROJECT_NAME} v{settings.VERSION} iniciado")
-    logger.info(f"📚 Documentação: {settings.API_V1_PREFIX}/docs")
+    logger.info(f"📚 Documentacao: {settings.API_V1_PREFIX}/docs")
 
 
 @app.on_event("shutdown")
 async def shutdown_event():
     """Evento de encerramento"""
-    logger.info("🛑 Aplicação encerrada")
+    logger.info("🛑 Aplicacao encerrada")
 
 
 if __name__ == "__main__":

@@ -1,5 +1,5 @@
 """
-Utilitários de segurança (JWT, hash de senha, etc)
+Utilitarios de seguranca (JWT, hash de senha, etc)
 """
 from datetime import datetime, timedelta
 from typing import Optional
@@ -26,8 +26,8 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -
     Cria um access token JWT
 
     Args:
-        data: Dados a serem incluídos no token
-        expires_delta: Tempo de expiração (padrão: 30 minutos)
+        data: Dados a serem incluidos no token
+        expires_delta: Tempo de expiracao (padrao: 30 minutos)
 
     Returns:
         Token JWT codificado
@@ -49,7 +49,7 @@ def create_refresh_token(data: dict) -> str:
     Cria um refresh token JWT
 
     Args:
-        data: Dados a serem incluídos no token
+        data: Dados a serem incluidos no token
 
     Returns:
         Token JWT codificado
@@ -69,7 +69,7 @@ def decode_token(token: str) -> Optional[dict]:
         token: Token JWT a ser decodificado
 
     Returns:
-        Payload do token ou None se inválido
+        Payload do token ou None se invalido
     """
     try:
         payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
@@ -80,7 +80,7 @@ def decode_token(token: str) -> Optional[dict]:
 
 def generate_chave_acesso() -> str:
     """
-    Gera uma chave de acesso única de 12 caracteres para Ordem de Serviço
+    Gera uma chave de acesso unica de 12 caracteres para Ordem de Servico
     Formato: XXXX-XXXX-XXXX
     """
     import random

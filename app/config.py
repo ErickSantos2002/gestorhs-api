@@ -1,5 +1,5 @@
 """
-Configurações da aplicação
+Configuracoes da aplicacao
 """
 from pydantic_settings import BaseSettings
 from functools import lru_cache
@@ -19,7 +19,7 @@ class Settings(BaseSettings):
 
     # API
     API_V1_PREFIX: str = "/api/v1"
-    PROJECT_NAME: str = "Sistema de Calibração"
+    PROJECT_NAME: str = "Sistema de Calibracao"
     VERSION: str = "1.0.0"
     DEBUG: bool = False
 
@@ -53,7 +53,7 @@ class Settings(BaseSettings):
 
 @lru_cache()
 def get_settings() -> Settings:
-    """Retorna instância única de Settings (singleton)"""
+    """Retorna instancia unica de Settings (singleton)"""
     return Settings()
 
 
