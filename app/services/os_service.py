@@ -35,7 +35,8 @@ class OSService:
             **os_data,
             chave_acesso=chave_acesso,
             fase_id=1,  # Fase "Solicitado"
-            situacao_servico="E"  # Espera
+            situacao_servico="E",  # Espera
+            data_solicitacao=datetime.utcnow()  # Definir explicitamente para evitar None
         )
         db.add(os)
         db.flush()  # Para obter o ID
