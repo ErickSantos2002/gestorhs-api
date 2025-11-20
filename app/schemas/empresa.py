@@ -123,7 +123,7 @@ class EmpresaUpdate(BaseModel):
 class EmpresaResponse(EmpresaBase):
     id: int
     imagem: Optional[str] = None
-    data_cadastro: date
+    data_cadastro: Optional[date] = None
     data_ultima_visita: Optional[date] = None
     usuario_cadastro_id: Optional[int] = None
     data_criacao: datetime

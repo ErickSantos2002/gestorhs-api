@@ -4,7 +4,7 @@ Router de Empresas
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.orm import Session
 from typing import Optional
-from datetime import datetime
+from datetime import datetime, date
 
 from app.database import get_db
 from app.models.empresa import Empresa, EmpresaHistorico
@@ -157,7 +157,8 @@ def create_empresa(
     empresa_data = empresa.model_dump(exclude={'usuario_cadastro_id', 'cnpj_cpf'})
     db_empresa = Empresa(
         **empresa_data,
-        usuario_cadastro_id=current_user.id
+        usuario_cadastro_id=current_user.id,
+        data_cadastro=date.today()
     )
     db.add(db_empresa)
     db.commit()
