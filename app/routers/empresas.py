@@ -221,7 +221,7 @@ def delete_empresa(
     db: Session = Depends(get_db),
     current_user: Usuario = Depends(get_current_active_user)
 ):
-    """Deleta empresa (soft delete)"""
+    """Deleta empresa permanentemente do banco de dados (hard delete)"""
     db_empresa = db.query(Empresa).filter(Empresa.id == empresa_id).first()
     if not db_empresa:
         raise HTTPException(
@@ -229,12 +229,12 @@ def delete_empresa(
             detail="Empresa não encontrada"
         )
 
-    # Soft delete
-    db_empresa.ativo = "N"
+    # Criar histórico ANTES de deletar
+    criar_historico(db, db_empresa, current_user.id, "DELETE")
     db.commit()
 
-    # Criar histórico
-    criar_historico(db, db_empresa, current_user.id, "DELETE")
+    # Hard delete - deleta permanentemente do banco
+    db.delete(db_empresa)
     db.commit()
 
     return {
