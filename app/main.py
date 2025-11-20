@@ -17,6 +17,8 @@ from app.routers import empresas
 from app.routers import equipamentos
 from app.routers import ordens_servico
 from app.routers import dashboard
+from app.routers import categorias
+from app.routers import marcas
 
 # Configurar logging
 logging.basicConfig(
@@ -52,6 +54,8 @@ app.include_router(equipamentos.router, prefix=settings.API_V1_PREFIX)
 app.include_router(equipamentos.router_empresa, prefix=settings.API_V1_PREFIX)
 app.include_router(ordens_servico.router, prefix=settings.API_V1_PREFIX)
 app.include_router(dashboard.router, prefix=settings.API_V1_PREFIX)
+app.include_router(categorias.router, prefix=settings.API_V1_PREFIX)
+app.include_router(marcas.router, prefix=settings.API_V1_PREFIX)
 
 
 @app.get("/")
