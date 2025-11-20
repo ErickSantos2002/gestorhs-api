@@ -1,7 +1,7 @@
 """
 Schemas de Empresas
 """
-from pydantic import BaseModel, EmailStr, Field, field_validator
+from pydantic import BaseModel, EmailStr, Field, field_validator, model_validator
 from typing import Optional
 from datetime import date, datetime
 from enum import Enum
@@ -21,6 +21,7 @@ class StatusContatoEnum(str, Enum):
 
 class EmpresaBase(BaseModel):
     tipo_pessoa: TipoPessoaEnum
+    cnpj_cpf: Optional[str] = Field(None, description="CNPJ (14 dígitos) ou CPF (11 dígitos)")
     cnpj: Optional[str] = Field(None, min_length=14, max_length=14)
     cpf: Optional[str] = Field(None, min_length=11, max_length=11)
     inscricao_estadual: Optional[str] = Field(None, max_length=20)
@@ -53,14 +54,36 @@ class EmpresaBase(BaseModel):
     ativo: str = Field("S", pattern="^[SN]$")
     status_contato: StatusContatoEnum = StatusContatoEnum.ATIVO
 
-    @field_validator('cnpj', 'cpf')
-    def validar_documento(cls, v, info):
-        tipo_pessoa = info.data.get('tipo_pessoa')
-        if tipo_pessoa == 'J' and not v:
+    @model_validator(mode='before')
+    @classmethod
+    def processar_cnpj_cpf(cls, data):
+        """Processa o campo cnpj_cpf e distribui para cnpj ou cpf baseado no tipo_pessoa"""
+        if isinstance(data, dict):
+            cnpj_cpf = data.get('cnpj_cpf')
+            tipo_pessoa = data.get('tipo_pessoa')
+
+            if cnpj_cpf:
+                # Remove caracteres especiais
+                cnpj_cpf_limpo = ''.join(filter(str.isdigit, str(cnpj_cpf)))
+
+                # Distribui para o campo correto baseado no tipo_pessoa
+                if tipo_pessoa == 'J' or tipo_pessoa == TipoPessoaEnum.JURIDICA:
+                    data['cnpj'] = cnpj_cpf_limpo
+                    data['cpf'] = None
+                elif tipo_pessoa == 'F' or tipo_pessoa == TipoPessoaEnum.FISICA:
+                    data['cpf'] = cnpj_cpf_limpo
+                    data['cnpj'] = None
+
+        return data
+
+    @model_validator(mode='after')
+    def validar_documento(self):
+        """Valida se o documento está presente baseado no tipo_pessoa"""
+        if self.tipo_pessoa == TipoPessoaEnum.JURIDICA and not self.cnpj:
             raise ValueError('CNPJ é obrigatório para pessoa jurídica')
-        if tipo_pessoa == 'F' and not v:
+        if self.tipo_pessoa == TipoPessoaEnum.FISICA and not self.cpf:
             raise ValueError('CPF é obrigatório para pessoa física')
-        return v
+        return self
 
 
 class EmpresaCreate(EmpresaBase):
