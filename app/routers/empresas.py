@@ -70,7 +70,7 @@ def list_empresas(
     cnpj: Optional[str] = None,
     cpf: Optional[str] = None,
     tipo_pessoa: Optional[str] = Query(None, pattern="^[JF]$"),
-    ativo: Optional[str] = Query(None, pattern="^[SN]$"),
+    ativo: Optional[str] = Query("S", pattern="^[SN]$"),  # Padrão: apenas ativas
     status_contato: Optional[str] = None,
     cidade: Optional[str] = None,
     estado: Optional[str] = None,
@@ -89,7 +89,7 @@ def list_empresas(
         query = query.filter(Empresa.cpf == cpf)
     if tipo_pessoa:
         query = query.filter(Empresa.tipo_pessoa == tipo_pessoa)
-    if ativo:
+    if ativo is not None:  # Permite filtrar por ativo/inativo ou ambos (passar vazio)
         query = query.filter(Empresa.ativo == ativo)
     if status_contato:
         query = query.filter(Empresa.status_contato == status_contato)
