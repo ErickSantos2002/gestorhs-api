@@ -154,8 +154,9 @@ def create_empresa(
         )
 
     # Criar empresa
+    empresa_data = empresa.model_dump(exclude={'usuario_cadastro_id'})
     db_empresa = Empresa(
-        **empresa.model_dump(),
+        **empresa_data,
         usuario_cadastro_id=current_user.id
     )
     db.add(db_empresa)

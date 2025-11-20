@@ -64,7 +64,7 @@ class EmpresaBase(BaseModel):
 
 
 class EmpresaCreate(EmpresaBase):
-    usuario_cadastro_id: Optional[int] = None
+    pass
 
 
 class EmpresaUpdate(BaseModel):
