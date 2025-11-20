@@ -103,7 +103,10 @@ def create_equipamento(
             detail="Código já cadastrado"
         )
 
-    db_equipamento = Equipamento(**equipamento.model_dump())
+    db_equipamento = Equipamento(
+        **equipamento.model_dump(),
+        data_cadastro=date.today()
+    )
     db.add(db_equipamento)
     db.commit()
     db.refresh(db_equipamento)

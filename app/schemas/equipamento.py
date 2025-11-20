@@ -1,7 +1,7 @@
 """
 Schemas de Equipamentos
 """
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 from typing import Optional
 from datetime import date, datetime
 from decimal import Decimal
@@ -63,9 +63,17 @@ class EquipamentoResponse(EquipamentoBase):
     imagem: Optional[str] = None
     video_url: Optional[str] = None
     visualizacoes: int
-    data_cadastro: date
+    data_cadastro: Optional[date] = None
     data_criacao: datetime
     data_atualizacao: datetime
+
+    @field_validator('data_cadastro', mode='before')
+    @classmethod
+    def convert_datetime_to_date(cls, v):
+        """Converte datetime para date se necessário"""
+        if isinstance(v, datetime):
+            return v.date()
+        return v
 
     class Config:
         from_attributes = True
