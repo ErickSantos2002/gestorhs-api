@@ -116,6 +116,14 @@ class OrdemServicoResponse(OrdemServicoBase):
     data_criacao: datetime
     data_atualizacao: datetime
 
+    @field_validator('data_solicitacao', mode='before')
+    @classmethod
+    def handle_null_data_solicitacao(cls, v):
+        """Define data atual se data_solicitacao for None (para registros antigos)"""
+        if v is None:
+            return datetime.utcnow()
+        return v
+
     @field_validator('valor_total', mode='before')
     @classmethod
     def convert_valor_total(cls, v):
@@ -139,6 +147,14 @@ class OrdemServicoListResponse(BaseModel):
     situacao_servico: str
     valor_total: Decimal
     pago: str
+
+    @field_validator('data_solicitacao', mode='before')
+    @classmethod
+    def handle_null_data_solicitacao(cls, v):
+        """Define data atual se data_solicitacao for None (para registros antigos)"""
+        if v is None:
+            return datetime.utcnow()
+        return v
 
     @field_validator('valor_total', mode='before')
     @classmethod
