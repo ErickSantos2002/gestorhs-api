@@ -1,9 +1,9 @@
 """
 Schemas para Entidades Auxiliares
 """
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 from typing import Optional
-from datetime import date
+from datetime import date, datetime
 
 
 # ===== CATEGORIA =====
@@ -26,6 +26,14 @@ class CategoriaUpdate(BaseModel):
 class CategoriaResponse(CategoriaBase):
     id: int
     data_cadastro: Optional[date] = None
+
+    @field_validator('data_cadastro', mode='before')
+    @classmethod
+    def convert_datetime_to_date(cls, v):
+        """Converte datetime para date se necessário"""
+        if isinstance(v, datetime):
+            return v.date()
+        return v
 
     class Config:
         from_attributes = True
@@ -51,6 +59,14 @@ class MarcaUpdate(BaseModel):
 class MarcaResponse(MarcaBase):
     id: int
     data_cadastro: Optional[date] = None
+
+    @field_validator('data_cadastro', mode='before')
+    @classmethod
+    def convert_datetime_to_date(cls, v):
+        """Converte datetime para date se necessário"""
+        if isinstance(v, datetime):
+            return v.date()
+        return v
 
     class Config:
         from_attributes = True
