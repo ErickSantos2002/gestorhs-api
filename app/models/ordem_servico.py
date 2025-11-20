@@ -20,7 +20,7 @@ class OrdemServico(Base):
     fase_id = Column(Integer, ForeignKey("fases_os.id"))
     tipo_calibracao_id = Column(Integer, ForeignKey("tipos_calibracao.id"))
 
-    chave_acesso = Column(String(12), unique=True, nullable=False, index=True)  # Para cliente acompanhar
+    chave_acesso = Column(String(20), unique=True, nullable=False, index=True)  # Para cliente acompanhar
     checklist_arquivo = Column(String(50))
     etiqueta_codigo = Column(String(50))
     quantidade_pilhas = Column(Integer, default=0)

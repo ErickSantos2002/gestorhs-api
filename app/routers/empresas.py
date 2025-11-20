@@ -4,7 +4,7 @@ Router de Empresas
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.orm import Session
 from typing import Optional
-from datetime import datetime
+from datetime import datetime, date
 
 from app.database import get_db
 from app.models.empresa import Empresa, EmpresaHistorico
@@ -154,9 +154,11 @@ def create_empresa(
         )
 
     # Criar empresa
+    empresa_data = empresa.model_dump(exclude={'usuario_cadastro_id', 'cnpj_cpf'})
     db_empresa = Empresa(
-        **empresa.model_dump(),
-        usuario_cadastro_id=current_user.id
+        **empresa_data,
+        usuario_cadastro_id=current_user.id,
+        data_cadastro=date.today()
     )
     db.add(db_empresa)
     db.commit()
@@ -219,7 +221,7 @@ def delete_empresa(
     db: Session = Depends(get_db),
     current_user: Usuario = Depends(get_current_active_user)
 ):
-    """Deleta empresa (soft delete)"""
+    """Deleta empresa permanentemente do banco de dados (hard delete)"""
     db_empresa = db.query(Empresa).filter(Empresa.id == empresa_id).first()
     if not db_empresa:
         raise HTTPException(
@@ -227,12 +229,12 @@ def delete_empresa(
             detail="Empresa não encontrada"
         )
 
-    # Soft delete
-    db_empresa.ativo = "N"
+    # Criar histórico ANTES de deletar
+    criar_historico(db, db_empresa, current_user.id, "DELETE")
     db.commit()
 
-    # Criar histórico
-    criar_historico(db, db_empresa, current_user.id, "DELETE")
+    # Hard delete - deleta permanentemente do banco
+    db.delete(db_empresa)
     db.commit()
 
     return {

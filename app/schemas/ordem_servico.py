@@ -1,7 +1,7 @@
 """
 Schemas de Ordens de Serviço
 """
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 from typing import Optional
 from datetime import date, datetime
 from decimal import Decimal
@@ -27,6 +27,14 @@ class OrdemServicoBase(BaseModel):
     valor_frete_envio: Decimal = Field(0, ge=0)
     valor_frete_retorno: Decimal = Field(0, ge=0)
 
+    @field_validator('valor_servico', 'valor_frete_envio', 'valor_frete_retorno', mode='before')
+    @classmethod
+    def convert_int_to_decimal(cls, v):
+        """Converte int para Decimal para evitar warnings de serialização"""
+        if isinstance(v, int):
+            return Decimal(str(v))
+        return v
+
 
 class OrdemServicoCreate(OrdemServicoBase):
     pass
@@ -51,6 +59,14 @@ class OrdemServicoUpdate(BaseModel):
     pago: Optional[str] = Field(None, pattern="^[SN]$")
     recebido: Optional[str] = Field(None, pattern="^[SN]$")
     garantia: Optional[str] = Field(None, pattern="^[SN]$")
+
+    @field_validator('valor_servico', 'valor_frete_envio', 'valor_frete_retorno', mode='before')
+    @classmethod
+    def convert_int_to_decimal(cls, v):
+        """Converte int para Decimal para evitar warnings de serialização"""
+        if v is not None and isinstance(v, int):
+            return Decimal(str(v))
+        return v
 
 
 class OrdemServicoFinalizar(BaseModel):
@@ -100,6 +116,22 @@ class OrdemServicoResponse(OrdemServicoBase):
     data_criacao: datetime
     data_atualizacao: datetime
 
+    @field_validator('data_solicitacao', mode='before')
+    @classmethod
+    def handle_null_data_solicitacao(cls, v):
+        """Define data atual se data_solicitacao for None (para registros antigos)"""
+        if v is None:
+            return datetime.utcnow()
+        return v
+
+    @field_validator('valor_total', mode='before')
+    @classmethod
+    def convert_valor_total(cls, v):
+        """Converte int para Decimal para evitar warnings de serialização"""
+        if isinstance(v, int):
+            return Decimal(str(v))
+        return v
+
     class Config:
         from_attributes = True
 
@@ -115,6 +147,22 @@ class OrdemServicoListResponse(BaseModel):
     situacao_servico: str
     valor_total: Decimal
     pago: str
+
+    @field_validator('data_solicitacao', mode='before')
+    @classmethod
+    def handle_null_data_solicitacao(cls, v):
+        """Define data atual se data_solicitacao for None (para registros antigos)"""
+        if v is None:
+            return datetime.utcnow()
+        return v
+
+    @field_validator('valor_total', mode='before')
+    @classmethod
+    def convert_valor_total(cls, v):
+        """Converte int para Decimal para evitar warnings de serialização"""
+        if isinstance(v, int):
+            return Decimal(str(v))
+        return v
 
     class Config:
         from_attributes = True
